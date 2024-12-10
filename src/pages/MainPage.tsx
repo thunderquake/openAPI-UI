@@ -1,21 +1,114 @@
+import { ApiContent } from "@/components/ApiContent";
+import { ApiSidebar } from "@/components/ApiSidebar";
 import FileInput from "@/components/FileInput";
+import { Input } from "@/components/ui/input";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { IParsedYaml } from "@/IParsedYaml";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { bundleFromString, createConfig } from "@redocly/openapi-core";
 import { useState } from "react";
 
 const MainPage = () => {
-  const [parcedObj, setParcedObj] = useState();
+  const [parsedObj, setparsedObj] = useState<IParsedYaml | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
-  const parcetoObj = async (yamlString: string) => {
+  const parsetoObj = async (yamlString: string) => {
     const config = await createConfig({});
     const result = await bundleFromString({ config, source: yamlString });
     return result.bundle.parsed;
   };
   const onChange = async (yamlString: string) => {
-    const objResponse = await parcetoObj(yamlString);
-    setParcedObj(objResponse);
+    const objResponse = await parsetoObj(yamlString);
+    setparsedObj(objResponse);
   };
 
-  return <FileInput onChange={onChange} />;
+  const options =
+    parsedObj &&
+    Object.values(parsedObj?.paths).map((path) =>
+      Object.entries(path).map(([key, config]) => {
+        const parameters = config?.parameters
+          ? config.parameters.map((parameter) => {
+              // TODO: Separate this into the helper
+              const path = parameter.$ref.replace("#", "").split("/").slice(1);
+
+              let obj = parsedObj;
+              // @ts-expect-error We need to define obj type but it changes on every iteration
+              path.forEach((key) => (obj = obj[key as keyof typeof obj]));
+
+              return obj;
+            })
+          : null;
+
+        const responses = {
+          examples: [],
+          schema: [],
+        };
+
+        return {
+          reqType: key,
+          name: config.summary,
+          operationId: config.operationId,
+          tags: config.tags,
+          summary: config.summary,
+          description: config.description,
+          parameters,
+          responses,
+        };
+      })
+    );
+
+  return (
+    <SidebarProvider>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar className="w-64 border-r">
+          <SidebarHeader className="border-b px-4 py-2">
+            <Input
+              type="search"
+              placeholder="Search API..."
+              className="w-full"
+            />
+          </SidebarHeader>
+          <SidebarContent>
+            <ScrollArea className="h-[calc(100vh-5rem)]">
+              <ApiSidebar
+                sections={parsedObj?.tags.map((tag) => tag.name) ?? []}
+                onSelectSection={setSelectedSection}
+                options={options?.flat() ?? null}
+              />
+            </ScrollArea>
+          </SidebarContent>
+        </Sidebar>
+        <div className="flex-1 overflow-auto">
+          <header className="flex items-center border-b px-4 py-2">
+            <SidebarTrigger />
+            <FileInput onChange={onChange} />
+          </header>
+          <main className="p-4">
+            <ApiContent
+              selectedSection={selectedSection}
+              description={
+                parsedObj?.tags.find((tag) => tag.name === selectedSection)
+                  ?.description ?? null
+              }
+              options={
+                options
+                  ?.flat()
+                  .filter((option) =>
+                    option.tags.includes(selectedSection ?? "")
+                  ) ?? null
+              }
+            />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
 };
 
 export default MainPage;
