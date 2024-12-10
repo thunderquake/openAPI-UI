@@ -1,10 +1,8 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { Label } from "@radix-ui/react-label";
+import { ChangeEvent } from "react";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 
 const FileInput = ({ onChange }: { onChange: (string: string) => void }) => {
-  const [yamlString, setYamlString] = useState("");
-
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -12,20 +10,15 @@ const FileInput = ({ onChange }: { onChange: (string: string) => void }) => {
       reader.onload = (e) => {
         const yamlContent = e.target?.result;
         if (typeof yamlContent === "string") {
-          setYamlString(yamlContent);
+          onChange(yamlContent);
         }
       };
       reader.readAsText(file);
     }
   };
 
-  useEffect(() => {
-    onChange(yamlString);
-  }, [onChange, yamlString]);
-  console.log(yamlString);
-
   return (
-    <div className="grid w-full max-w-sm items-center gap-2">
+    <div className="flex w-full flex-row items-center gap-2 px-6">
       <Label htmlFor="yaml-file-input">Upload OpenAPI Definition (YAML)</Label>
       <Input
         id="yaml-file-input"
