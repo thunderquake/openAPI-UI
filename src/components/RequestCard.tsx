@@ -1,5 +1,5 @@
+import { reqColors } from "@/consts";
 import { cn } from "@/lib/utils";
-import { reqColors } from "./ApiSidebar";
 import { Badge } from "./ui/badge";
 import {
   Card,
@@ -27,23 +27,7 @@ interface IOption {
         format: string;
       };
     }[];
-    responses: {
-      [key: string]: {
-        description: string;
-        content: {
-          "application/json": {
-            schema: {
-              $ref: string;
-            };
-            examples: {
-              [key: string]: {
-                $ref: string;
-              };
-            };
-          };
-        };
-      };
-    };
+    responses: { examples: []; schema: [] };
   };
 }
 
@@ -71,7 +55,10 @@ const RequestCard = ({ option }: IOption) => {
             <h4>Request</h4>
             <div className="py-6">
               {option.parameters.map((parameter) => (
-                <div className="border-b-2 border-muted pb-2">
+                <div
+                  key={parameter.name}
+                  className="border-b-2 border-muted pb-2"
+                >
                   <div className="flex flex-row gap-4">
                     <h1 className="font-bold">{parameter.name}</h1>
                     <p className="text-gray-500">{parameter.schema.type}</p>
@@ -95,10 +82,6 @@ const RequestCard = ({ option }: IOption) => {
             </div>
           </div>
         )}
-        <div>
-          <h5>Response</h5>
-          <div></div>
-        </div>
       </CardContent>
     </Card>
   );

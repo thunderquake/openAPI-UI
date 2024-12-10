@@ -1,41 +1,30 @@
 import RequestCard from "./RequestCard";
+export type ApiContentOptions =
+  | {
+      reqType: string;
+      name: string;
+      operationId: string;
+      tags: string[];
+      summary: string;
+      description: string;
+      parameters: {
+        name: string;
+        description: string;
+        in: string;
+        schema: {
+          type: string;
+          example: string;
+          format: string;
+        };
+      }[];
+      responses: { examples: []; schema: [] };
+    }[]
+  | null;
 
 interface ApiContentProps {
   selectedSection: string | null;
   description: string | null;
-  options:
-    | {
-        reqType: string;
-        name: string;
-        operationId: string;
-        tags: string[];
-        summary: string;
-        description: string;
-        parameters: {
-          name: string;
-          description: string;
-          in: string;
-          schema: { type: string; example: string; format: string };
-        }[];
-        responses: {
-          [key: string]: {
-            description: string;
-            content: {
-              "application/json": {
-                schema: {
-                  $ref: string;
-                };
-                examples: {
-                  [key: string]: {
-                    $ref: string;
-                  };
-                };
-              };
-            };
-          };
-        };
-      }[]
-    | null;
+  options: ApiContentOptions;
 }
 
 export function ApiContent({
@@ -55,7 +44,7 @@ export function ApiContent({
       </div>
       <div className="flex flex-col gap-2">
         {options?.map((option) => (
-          <RequestCard option={option} />
+          <RequestCard key={option.operationId} option={option} />
         ))}
       </div>
     </div>

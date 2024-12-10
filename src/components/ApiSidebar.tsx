@@ -1,3 +1,4 @@
+import { reqColors } from "@/consts";
 import { cn } from "@/lib/utils";
 import { CollapsibleContent } from "@radix-ui/react-collapsible";
 import { ChevronDownIcon } from "lucide-react";
@@ -23,13 +24,6 @@ interface ApiSidebarProps {
     | null;
 }
 
-export const reqColors = {
-  get: "bg-green-600",
-  post: "bg-blue-600",
-  patch: "bg-yellow-600",
-  delete: "bg-red-600",
-};
-
 export function ApiSidebar({
   onSelectSection,
   sections,
@@ -38,7 +32,7 @@ export function ApiSidebar({
   return (
     <>
       {sections.map((section) => (
-        <Collapsible defaultOpen className="group/collapsible">
+        <Collapsible key={section} defaultOpen className="group/collapsible">
           <SidebarGroup>
             <SidebarGroupLabel asChild>
               <CollapsibleTrigger>
@@ -52,6 +46,7 @@ export function ApiSidebar({
                   (option) =>
                     option.tags.includes(section) && (
                       <Button
+                        key={option.operationId}
                         onClick={() => onSelectSection(section)}
                         variant={"ghost"}
                       >
