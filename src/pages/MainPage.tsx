@@ -1,11 +1,9 @@
-import { ApiContent } from "@/components/ApiContent";
+import { ApiContent, ApiContentOptions } from "@/components/ApiContent";
 import { ApiSidebar } from "@/components/ApiSidebar";
 import FileInput from "@/components/FileInput";
-import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -57,7 +55,8 @@ const MainPage = () => {
           tags: config.tags,
           summary: config.summary,
           description: config.description,
-          parameters,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          parameters: parameters as any,
           responses,
         };
       })
@@ -67,13 +66,6 @@ const MainPage = () => {
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden">
         <Sidebar className="w-64 border-r">
-          <SidebarHeader className="border-b px-4 py-2">
-            <Input
-              type="search"
-              placeholder="Search API..."
-              className="w-full"
-            />
-          </SidebarHeader>
           <SidebarContent>
             <ScrollArea className="h-[calc(100vh-5rem)]">
               <ApiSidebar
@@ -97,11 +89,11 @@ const MainPage = () => {
                   ?.description ?? null
               }
               options={
-                options
+                (options
                   ?.flat()
                   .filter((option) =>
                     option.tags.includes(selectedSection ?? "")
-                  ) ?? null
+                  ) as ApiContentOptions) ?? null
               }
             />
           </main>
